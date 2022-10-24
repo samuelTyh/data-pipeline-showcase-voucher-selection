@@ -1,16 +1,16 @@
+import os
 import pandas as pd
 
 
 class Dataset:
-    def __init__(self, path: str, country_code: str = None):
+    def __init__(self, country_code: str = None):
         """
         Create a dataset for voucher selection
-        :param path: file path of raw data in parquet format
         :param country_code: selected country code, optional
         :return:
         """
-        self.path = path
-        self.raw_data = None
+        self._path = os.getcwd() + '/data/data.parquet.gzip'
+        self._raw_data = None
         self.clean_data = None
         self._read_data()
         self._filter_country_code(country_code)
@@ -34,7 +34,7 @@ class Dataset:
     def convert_string_to_timestamp(self, column_name):
         if column_name not in ('timestamp', 'last_order_ts', 'first_order_ts'):
             raise TypeError(f"Perform conversion on the wrong column: {column_name}")
-        self.clean_data[column_name] = pd.to_datetime(self.clean_data[column_name])
+        self.clean_data[column_name] = pd.to_datetime(self.clean_data[column_name], utc=True)
 
     def convert_string_or_float_to_integer(self, column_name):
         if column_name not in ('total_orders', 'voucher_amount'):
@@ -44,25 +44,22 @@ class Dataset:
     def deduplication(self):
         self.clean_data.drop_duplicates(keep='first', inplace=True)
 
-    def clean_raw_data_in_parquet_format(self):
-        self.update_field_voucher_amount()
-        self.update_field_total_orders()
-        self.update_field_timestamp()
-        self.update_field_last_order_ts()
-        self.deduplication()
-
     def _read_data(self):
         try:
-            self.raw_data = pd.read_parquet(self.path)
+            self._raw_data = pd.read_parquet(self._path, engine='pyarrow')
         except Exception as e:
             raise e
         self._country_code_lowercase()
 
     def _country_code_lowercase(self):
-        self.raw_data.country_code = self.raw_data.country_code.str.lower()
+        self._raw_data.country_code = self._raw_data.country_code.str.lower()
 
     def _filter_country_code(self, country):
         if country:
-            self.clean_data = self.raw_data[self.raw_data.country_code == country.lower()]
+            self.clean_data = self._raw_data[self._raw_data.country_code == country.lower()]
         else:
-            self.clean_data = self.raw_data
+            self.clean_data = self._raw_data
+
+    def add_date_diff(self):
+        self.clean_data['created_at'] = pd.Timestamp.utcnow()
+        self.clean_data['date_diff'] = (self.clean_data['created_at'] - self.clean_data['last_order_ts']).dt.days
