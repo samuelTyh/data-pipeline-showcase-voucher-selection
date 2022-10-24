@@ -1,14 +1,12 @@
-import os
 import pytest
 import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype
-from data_pipeline import Dataset
+from data_pipeline import Dataset, create_frequent_segment, create_recency_segment, calculate_datediff
 
 
 @pytest.fixture()
 def initialized_dataset() -> Dataset:
-    path = os.getcwd() + '/data/data.parquet.gzip'
-    dataset = Dataset(path=path, country_code='peru')
+    dataset = Dataset(country_code='peru')
     return dataset
 
 
