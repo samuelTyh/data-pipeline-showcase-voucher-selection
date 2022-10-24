@@ -4,6 +4,9 @@ from .utils import create_frequent_segment, create_recency_segment
 
 
 class Run:
+    """
+    Run data pipeline
+    """
 
     def __init__(self):
         self.db = DB()
@@ -20,6 +23,11 @@ class Run:
         self.dataset.clean_data['recency_segment'] = self.dataset.clean_data['date_diff'].apply(create_recency_segment)
 
     def build_segment_data(self, segment_name):
+        """
+        Build segment data of each segment name
+        :param segment_name: frequent_segment or recency_segment
+        :return:
+        """
         self.dataset.add_date_diff()
         self._voucher_segments()
         segment = self.dataset.clean_data.groupby([segment_name, 'voucher_amount']).count()\

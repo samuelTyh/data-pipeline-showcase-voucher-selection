@@ -4,6 +4,9 @@ from psycopg2.extras import execute_values
 
 
 class DB:
+    """
+    Initialize DB instance
+    """
     voucher_selection_schema = {
         "timestamp": "DATE",
         "country_code": "VARCHAR",

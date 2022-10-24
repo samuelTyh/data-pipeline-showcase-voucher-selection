@@ -12,6 +12,11 @@ run.build_segment_data('recency_segment')
 
 
 def voucher_selection(request: Customer) -> Voucher:
+    """
+    Create Voucher selection by data posting from endpoint
+    :param request: customer's request
+    :return: voucher
+    """
     country_code, segment_name = request.country_code, request.segment_name
     if segment_name == 'frequent_segment':
         segment_value = create_frequent_segment(request.total_orders)
