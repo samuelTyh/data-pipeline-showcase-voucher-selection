@@ -2,7 +2,8 @@ version: "3.9"
 
 services:
   postgres_db:
-    image: postgres
+    container_name: postgres_db
+    image: postgres:14
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:
@@ -21,10 +22,10 @@ services:
       retries: 5
 
   api:
+    container_name: voucher_selection_api
     build: .
     volumes:
       - ./data:/data
-#    command: bash -c 'voucher_selection db seed --input-csv=/data/data_clean.csv && voucher_selection api run'
     ports:
       - "8080:8080"
     environment:
