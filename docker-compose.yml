@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  postgres_db:
+    image: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=voucher_selection
+    hostname: postgres.host
+    networks:
+      - app
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d postgres -U user -h postgres_db -p 5432" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    volumes:
+      - ./data:/data
+#    command: bash -c 'voucher_selection db seed --input-csv=/data/data_clean.csv && voucher_selection api run'
+    ports:
+      - "8080:8080"
+    environment:
+      - APP_DB_HOST=postgres.host
+      - APP_DB_USERNAME=user
+      - APP_DB_PASSWORD=password
+      - APP_DB_DATABASE=voucher_selection
+    networks:
+      - app
+    depends_on:
+      - postgres_db
+
+networks:
+  app:
+
+volumes:
+  db-data:
